@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
@@ -133,6 +134,20 @@ func (d *DNSProviderPublic) CleanUp(domain, _, keyAuth string) error {
 	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, zone.Name)
 	if err != nil {
 		return fmt.Errorf("azuredns: %w", err)
+	}
+
+	uniqRecords := publicUniqueRecords(resp.RecordSet, info.Value)
+
+	var filteredRecords []string
+
+	for _, txt := range uniqRecords {
+		if !strings.Contains(txt, "acme") {
+
+		}
+	}
+
+	if len(uniqRecords) == 0 {
+
 	}
 
 	_, err = client.Delete(ctx, subDomain)
