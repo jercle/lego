@@ -13,6 +13,8 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/dns/armdns"
 	"github.com/go-acme/lego/v4/challenge/dns01"
+	"github.com/go-acme/lego/v4/log"
+	"github.com/miekg/dns"
 )
 
 // DNSProviderPublic implements the challenge.Provider interface for Azure Public Zone DNS.
@@ -57,10 +59,27 @@ func (d *DNSProviderPublic) Present(domain, _, keyAuth string) error {
 		return fmt.Errorf("azuredns: %w", err)
 	}
 
-	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, zone.Name)
-	if err != nil {
-		return fmt.Errorf("azuredns: %w", err)
+	canonDomain := dns.Fqdn(info.EffectiveFQDN)
+	canonZone := dns.Fqdn(zone.Name)
+	log.Infof("Public Canon Domain [%s] Canon Zone [%s]", canonDomain, canonZone)
+	var subDomain string
+	if canonDomain == canonZone {
+		subDomain = "@"
+	} else {
+		subDomain, err = dns01.ExtractSubDomain(info.EffectiveFQDN, zone.Name)
+		if err != nil {
+			return fmt.Errorf("azuredns: %w", err)
+		}
 	}
+	// subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, zone.Name)
+	// if err != nil {
+	//     return fmt.Errorf("azuredns: %w", err)
+	// }
+
+	// subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, zone.Name)
+	// if err != nil {
+	// 	return fmt.Errorf("azuredns: %w", err)
+	// }
 
 	// Get existing record set
 	resp, err := client.Get(ctx, subDomain)
