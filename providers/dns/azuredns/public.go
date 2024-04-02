@@ -59,6 +59,8 @@ func (d *DNSProviderPublic) Present(domain, _, keyAuth string) error {
 		return fmt.Errorf("azuredns: %w", err)
 	}
 
+	// envVar := os.Getenv("AZURE_SUBSCRIPTION_ID")
+
 	canonDomain := dns.Fqdn(info.EffectiveFQDN)
 	canonZone := dns.Fqdn(zone.Name)
 	log.Infof("Public Canon Domain [%s] Canon Zone [%s]", canonDomain, canonZone)
